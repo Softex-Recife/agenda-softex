@@ -3,10 +3,8 @@ from flask import Flask, json, jsonify, abort
 from flask_restful import Resource, Api
 from eventos import Eventos
 
-
 app = Flask(__name__)
 api = Api(app)
-
 
 class HelloWorld(Resource):
     def get(self):
