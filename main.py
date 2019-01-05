@@ -3,6 +3,8 @@ from flask import Flask, json, jsonify, abort
 from flask_restful import Resource, Api
 from eventos import Eventos
 
+#https://medium.com/the-andela-way/deploying-a-python-flask-app-to-heroku-41250bda27d0
+
 app = Flask(__name__)
 api = Api(app)
 
