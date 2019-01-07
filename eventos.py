@@ -48,10 +48,18 @@ class Eventos():
 
     def get_details(self, text):
         # data = re.findall(r"[0-3][0-9]/[0-1][0-9]/[1-2][0-9]{3}", text)[0]
-        data = re.findall(r"Quando:.*",text)[0][8:]
+        data = re.findall(r"Quando:.*",text)
+        if not data: #para casos em que a palavra Quando nao estiver presente (robotica)
+            data = re.findall(r"\nDe .*",text)[0][4:]
+        else:
+            data = data[0][8:]
         # hora = re.findall(r"[0-2]?[0-9]h[0-5][0-9]", text)[0]
         hora = re.findall(r"Horário:.*",text)[0][9:]
-        onde = re.findall(r"Onde:.*",text)[0][6:]
+        onde = re.findall(r"Onde:.*",text)
+        if not onde:
+            onde = re.findall(r"Local:.*",text)[0][7:]
+        else:
+            onde = onde[0][6:]
         descricao = text.split("Quando:")[0]
         return data, descricao, hora, onde
 
