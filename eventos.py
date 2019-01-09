@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 PAGE_LINK = "http://www.softexrecife.org.br/agenda/"
 
@@ -36,7 +36,7 @@ class Eventos():
         res = self.get_all()
         new_list = []
         if res:
-            today = datetime.now()
+            today = datetime.utcnow() - timedelta(hours=3)
             current_day = today.day
             for i in self.lista:
                 event_date = i.data
