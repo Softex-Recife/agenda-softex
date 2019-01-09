@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 import re
+import time
+from datetime import datetime
 
 PAGE_LINK = "http://www.softexrecife.org.br/agenda/"
 
@@ -24,10 +26,28 @@ class Eventos():
                 img, descricao, data, horario, onde = self.get_info(tag2)
                 evento = Evento(titulo, data, horario, descricao, onde, img, PAGE_LINK)
                 self.lista.append(evento)
-            return self
+            return self.lista
         except Exception as e:
             print(e)
             return None
+
+
+    def get_events_today(self):       
+        res = self.get_all()
+        new_list = []
+        if res:
+            today = datetime.now()
+            current_day = today.day
+            for i in self.lista:
+                event_date = i.data
+                even_first_date = re.findall(r"[0-9]{2}/[0-9]{2}/[0-9]{4}",event_date)[0]
+                even_day = even_first_date[0:2]
+                if int(even_day) is current_day:
+                    new_list.append(i)
+        return new_list
+
+
+
 
 
     def get_titulo(self, tag1):
