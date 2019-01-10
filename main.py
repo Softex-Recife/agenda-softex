@@ -15,15 +15,11 @@ class HelloWorld(Resource):
 
 class get_eventos(Resource):
     def get(self):
-        res = eventos.get_all()
-        if not res:
-            return "Oh não! Um erro inesperado ao obter os eventos!", 500
-        else:
+        res = eventos.get_events_from_now()
+        if res:
             res_dict = [x.__dict__ for x in res]
-            print (res_dict)
-            #("{'eventos: {} }".format(res_dict))
-            a = "{ 'eventos' :" + str(res_dict) + "}"
             return jsonify(res_dict)
+        return "Oh não! Um erro inesperado ao obter os eventos!", 500
 
 class get_events_today(Resource):
     def get(self):

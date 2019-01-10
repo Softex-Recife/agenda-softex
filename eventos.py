@@ -7,10 +7,14 @@ from datetime import datetime, timedelta
 PAGE_LINK = "http://www.softexrecife.org.br/agenda/"
 
 class Eventos():
-    def __init__(self,lista=[]):
-        self.lista = lista
+    def __init__(self):
+        self.ultima_att = None
+        self.lista = []
 
-    def get_all(self):
+    
+    def request_all_events(self):
+        """request all eventos on softex agenda's site and return div cotaining all"""
+        encontros = None
         try:
             page_response = requests.get(PAGE_LINK, timeout=5)
             page_content = BeautifulSoup(page_response.content, "html.parser")
@@ -19,35 +23,61 @@ class Eventos():
             container = section.findChildren('div', attrs={"class": "container-fluid"}, recursive=False)[0]
             div_8 = container.findChildren('div', attrs={"class": "col-md-8"}, recursive=False)[0]
             encontros = div_8.findChildren('div', recursive=False)[1:]
-            for i in range(0,len(encontros)-1,2):
-                tag1 = encontros[i]
-                tag2 = encontros[i+1]
-                titulo = self.get_titulo(tag1)
-                img, descricao, data, horario, onde = self.get_info(tag2)
-                evento = Evento(titulo, data, horario, descricao, onde, img, PAGE_LINK)
-                self.lista.append(evento)
-            return self.lista
         except Exception as e:
             print(e)
-            return None
+        return encontros
 
 
-    def get_events_today(self):       
-        res = self.get_all()
-        new_list = []
-        if res:
+    def get_all(self):
+        now = datetime.utcnow() - timedelta(hours=3)
+        actual_month = now.month
+        if actual_month is not self.ultima_att:
+            try:
+                encontros = self.request_all_events()
+                for i in range(0,len(encontros)-1,2):
+                    tag1 = encontros[i]
+                    tag2 = encontros[i+1]
+                    titulo = self.get_titulo(tag1)
+                    img, descricao, data, horario, onde = self.get_info(tag2)
+                    evento = Evento(titulo, data, horario, descricao, onde, img, PAGE_LINK)
+                    self.lista.append(evento)
+                    self.ultima_att = actual_month
+            except Exception as e:
+                print(e)
+                return None
+        return self.lista
+
+
+    def get_events_from_now(self):
+        def filter_from_now(event):
             today = datetime.utcnow() - timedelta(hours=3)
             current_day = today.day
-            for i in self.lista:
-                event_date = i.data
-                even_first_date = re.findall(r"[0-9]{2}/[0-9]{2}/[0-9]{4}",event_date)[0]
-                even_day = even_first_date[0:2]
-                if int(even_day) is current_day:
-                    new_list.append(i)
+            event_date = event.data
+            even_first_date = re.findall(r"[0-9]{2}/[0-9]{2}/[0-9]{4}",event_date)[0]
+            even_day = even_first_date[0:2]
+            if int(even_day) >= current_day:
+                return event
+        events = self.get_all()
+        new_list = []
+        if events:
+            new_list = list(filter(filter_from_now, events))            
         return new_list
 
 
-
+    def get_events_today(self):
+        def filter_today(event):
+            today = datetime.utcnow() - timedelta(hours=3)
+            current_day = today.day
+            event_date = event.data
+            even_first_date = re.findall(r"[0-9]{2}/[0-9]{2}/[0-9]{4}",event_date)[0]
+            even_day = even_first_date[0:2]
+            if int(even_day) is current_day:
+                return event
+        events = self.get_all()
+        new_list = []
+        if events:
+            new_list = list(filter(filter_today, events))            
+        return new_list
 
 
     def get_titulo(self, tag1):
@@ -65,6 +95,7 @@ class Eventos():
         text = div_info.text.replace("\xa0", " ")
         data, descricao, horario, onde = self.get_details(text)
         return img, descricao, data, horario, onde
+
 
     def get_details(self, text):
         # data = re.findall(r"[0-3][0-9]/[0-1][0-9]/[1-2][0-9]{3}", text)[0]
