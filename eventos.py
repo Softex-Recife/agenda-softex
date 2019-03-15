@@ -53,7 +53,13 @@ class Eventos():
             today = datetime.utcnow() - timedelta(hours=3)
             current_day = today.day
             event_date = event.data
-            even_first_date = re.findall(r"[0-9]{2}/[0-9]{2}/[0-9]{4}",event_date)[0]
+            try:
+                even_first_date = re.findall(r"[0-9]{2}/[0-9]{2}/[0-9]{4}",event_date)[0]
+                pass
+            except:
+                even_first_date = re.findall(r"[0-9]{2}/[0-9]{2}",event_date)[0]
+                pass
+            
             even_day = even_first_date[0:2]
             if int(even_day) >= current_day:
                 return event
